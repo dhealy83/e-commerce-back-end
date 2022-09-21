@@ -27,8 +27,11 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   // find a single product by its `id`
   try {
-    const allProducts = await Product.findByPK(req.params.id, {
+    const allProducts = await Product.findOne({
       // be sure to include its associated Category and Tag data
+      where: {
+        id: req.params.id,
+      },
       include: [
         Category,
         {
@@ -109,8 +112,21 @@ router.put("/:id", (req, res) => {
     });
 });
 
-router.delete("/:id", (req, res) => {
-  // delete one product by its `id` value
+router.delete("/:id", async (req, res) => {
+  // delete a category by its `id` value
+  try {
+    const deleteProducts = await Product.destroy({
+      where: {
+        id: req.params.id,
+      },
+    });
+    if (!deleteProducts) {
+      res.status(404).json({ message: "No product found with this data." });
+      return;
+    }
+    res.status(200).json(deleteProducts);
+  } catch (err) {
+    res.status(500).json(err);
+  }
 });
-
 module.exports = router;
